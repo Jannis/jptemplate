@@ -1,3 +1,22 @@
+2008-07-01	Jannis Pohlmann <jannis@xfce.org>
+
+	* Version 1.2 released!
+	* doc/index.html: Update documentation.
+	* jptemplate.vim: Use list for the default configuration
+	  variables. Add g:jpTemplateDateFormat for the default date
+	  format used for ${date} fields, g:jpTemplateDefaults for
+	  a list of default values for custom fields, like ${author}.
+	  This way you don't have to type ${author:My name here} all 
+	  all the time. Also add g:jpTemplateVerbose for enabling more
+	  verbose output. 
+	  Add jp:ParseExpression() to extract name and value from 
+	  ${...} expressions. Add jp:EvaluateReservedVariable() for 
+	  determining values of special variables like ${date}. More 
+	  special variables will follow.
+	  Rework jp:ProcessTemplate() in various ways: Implement 
+	  support for special variables like ${date} with and without
+	  parameters (like ${date:insert format string here}). 
+
 2008-06-30	Jannis Pohlmann <jannis@xfce.org>
 
 	* TODO: TODO file added.

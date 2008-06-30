@@ -1,5 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<!-- vi:set sw=2 sts=2 et ai nocindent: -->
+<!-- vi:set sw=2 sts=2 ts=2 et ai nocindent: -->
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -7,11 +7,13 @@
     <link rel="stylesheet" href="http://www.w3.org/StyleSheets/Core/Steely" media="all" />
     <style type="text/css" media="all">
       h3 { font-size:1.35em; }
+      table { margin-top:1em; }
+      th,td { padding:0em 1em 0.5em 0em; vertical-align:top; }
     </style>
   </head>
   <body>
     <h1>JPTemplate &#8212; A comfortable and interactive template system for VIM</h1>
-    <p>Written by Jannis Pohlmann, February 2008. Last updated on June 30th, 2008.</p>
+    <p>Written by Jannis Pohlmann, February 2008. Last updated on July 1st, 2008.</p>
 
     <ol>
       <li><a href="#introduction">Introduction</a>
@@ -23,7 +25,12 @@
       <li><a href="#installation">Installation</a>
         <ol>
           <li><a href="#install-plugin">Installing the plugin</a></li>
-          <li><a href="#install-config">Configuring VIM</a></li>
+          <li>
+            <a href="#install-config">Configuring VIM</a>
+            <ol>
+              <li><a href="#configuration-parameters">Configuration parameters</a></li>
+            </ol>
+          </li>
         </ol>
       </li>
       <li><a href="#usage">Usage</a>
@@ -31,7 +38,7 @@
           <li><a href="#writing-templates">Writing templates</a>
             <ol>
               <li><a href="#directory-structure">Directory structure</a></li>
-              <li><a href="#reserved-names">Reserved variable names</a></li>
+              <li><a href="#special-variables">Special variables</a></li>
             </ol>
           </li>
           <li>
@@ -54,16 +61,24 @@
       <dd>
         <ul>
           <li>User variables (replaced with user input)</li>
-          <li>Reserved variables (automatically replaced, e.g. with current date)</li>
+          <li>Special <tt>${cursor}</tt> variable for defining the cursor position</li>
           <li>Indentation</li>
           <li>Separate templates for different filetypes</li>
         </ul>
       </dd>
-      <dt>Version 1.1 (<strong>NEW</strong>)</dt>
+      <dt>Version 1.1</dt>
       <dd>
         <ul>
           <li>Configurable keyboard shortcut</li>
           <li>Default values for variables</li>
+        </ul>
+        </dd>
+      <dt>Version 1.2 (<strong>NEW</strong>)</dt>
+      <dd>
+        <ul>
+          <li>Support for special variables (with and without default value)</li>
+          <li>Support for global defaults for user variables</li>
+          <li>New special variable: <tt>${date}</tt></li>
         </ul>
       </dd>
     </dl>
@@ -81,17 +96,51 @@
     <p>All you need to do to configure VIM is to define the directory where all templates can be found. By default <strong><tt>$HOME/.vim/jptemplate/</tt></strong> is used.</p>
     <p>If you want to define a directory on your own, put the following into your <tt><strong>.vimrc</strong></tt>:</p>
     <pre><code>  <strong>let g:jpTemplateDir = '/path/to/the/template/directory'</strong></code></pre>
+    <h4 id="configuration-parameters">Configuration parameters</h4>
+    <table style="margin-left:2em;" cellpadding="0" cellspacing="0">
+      <tr>
+        <th style="padding-right:2em;">Parameter</th>
+        <th>Default value</th>
+        <th>Meaning</th>
+      </tr>
+      <tr>
+        <td><tt><strong>g:jpTemplateDir</strong></tt></td>
+        <td><tt>'$HOME/.vim/jptemplate'</tt></td>
+        <td>Path to the template directory.</td>
+      </tr>
+      <tr>
+        <td><tt><strong>g:jpTemplateKey</strong></tt></td>
+        <td><tt>'&lt;C-Tab&gt;'</tt></td>
+        <td>Keyboard shortcut for triggering templates</td>
+      </tr>
+      <tr>
+        <td><tt><strong>g:jpTemplateDateFormat</strong></tt></td>
+        <td><tt>'%Y-%m-%d'</tt></td>
+        <td>Default <a href="http://vimdoc.sourceforge.net/htmldoc/eval.html#strftime()">strftime</a> format used for <tt>${date}</tt></td>
+      </tr>
+      <tr>
+        <td><tt><strong>g:jpTemplateDefaults</strong></tt></td>
+        <td><tt>{}</tt></td>
+        <td>Dictionary with global default values for (non-special) template variables.</td>
+      </tr>
+      <tr>
+        <td><tt><strong>g:jpTemplateVerbose</strong></tt></td>
+        <td><tt>0</tt></td>
+        <td>Can be used to increase the verbosity level (either <tt>0</tt> or <tt>1</tt>).</td>
+      </tr>
+    </table>
 
     <h2 id="usage">Usage</h2>
     <h3 id="writing-templates">Writing templates</h3>
-    <p>Writing templates is easy. They're plain text files with embedded variables. When triggering a template, you are asked to enter values for most of these variables. After that the template is inserted into your document and all variables are replaced by the values you defined before.</p>
-    <p>Variables are defined using the following syntax: <tt><strong>${put variable name here}</strong></tt>. You can optionally provide a default value with <tt><strong>${variable name:default value}</strong></tt>.</p>
+    <p>Writing templates is easy. They are plain text files with embedded variables. When triggering a template, you are asked to enter values for most of these variables. After that the template is inserted into your document and all variables are replaced by the values you defined before.</p>
+    <p>Variables are defined using the following syntax: <tt><strong>${put variable name here}</strong></tt>.</p>
+    <p>You can optionally provide a default value with <tt><strong>${variable name:default value}</strong></tt>. You can also define global defaults for any of these variables. See section <a href="#configuration-parameters">Configuration parameters</a> for more information. Please note that the value in <tt>${variable name:default value}</tt> will always override the global default.</p>
     <p>This is an example for a simple <tt>for</tt> loop:</p>
     <pre><code>  <strong>for (${initializer expression:int i = 0}; ${loop test expression}; ${counting expression:++i})
     {
       ${cursor}
     }</strong></code></pre>
-    <p>Please not that the <tt><strong>${cursor}</strong></tt> variable is special. See the section <a href="#reserved-names">Reserved names</a> for more information about <tt><strong>${cursor}</strong></tt> and other reserved names.</p>
+    <p>Please not that the <tt><strong>${cursor}</strong></tt> variable is special. See the section <a href="#special-variables">Special variables</a> for more information about <tt><strong>${cursor}</strong></tt> and other special variables.</p>
     <p>You can also define one variable to appear several times in the same template. In this case you'll be asked only once to enter a value for the variable. Imagine a signature template:</p>
     <pre><code>  <strong>Yours faithfully,
   ${name}
@@ -124,17 +173,26 @@
     ...</strong></code></pre>
     <p>Each subdirectory contains templates for one VIM filetype. I guess the template filenames are pretty self-explanatory: Each filename represents the name you have to enter to trigger the template in VIM. Of course you can create symlinks everywhere if you like (as I did with <tt><strong>c -&gt; cpp/</strong></tt> in the example). Note that the <tt><strong>general/</tt></strong> directory is special as it contains templates for unknown filetypes, like empty files with no extension.</p>
     <p><strong>Hint:</strong> If you need to find out the filetype of a file you want to write a plugin for, just enter <tt><strong>:echo &ft</strong></tt> and VIM will tell you.</p>
-    <h4 id="reserved-names">Reserved names</h4>
-    <p>The following table illustrates which variables are reserved for special cases:</p>
+    <h4 id="special-variables">Special variables</h4>
+    <p>The following table illustrates which variables are reserved for special situations or just for some <em>magic</em>. Some variables require a parameter.</p>
     <table style="margin-left:2em;" cellpadding="0" cellspacing="0">
       <tr>
         <th style="padding-right:2em;">Variable</th>
-        <th>Usage / Effect</th>
+        <th>Parameters</th>
+        <th style="width:25%">Examples</th>
+        <th style="width:40%">Effect</th>
       </tr>
       <tr>
         <td><tt><strong>${cursor}</strong></tt></td>
+        <td></td>
+        <td></td>
         <td>This is where the cursor will be located after the template has been inserted into your document.</td>
       </tr>
+      <tr>
+        <td><tt><strong>${date}</strong></tt></td>
+        <td><a href="http://vimdoc.sourceforge.net/htmldoc/eval.html#strftime()">strftime</a> format string (optional)</td>
+        <td><tt><strong>${date}</strong></tt><br /><tt><strong>${date:%Y-%m-%d}</strong></tt></td>
+        <td>Insert the current date.</td>
     </table>
     <h3 id="using-templates">Using templates</h3>
     <p>Using the templates is pretty straight-forwarded. Let's assume you're editing a <tt>C++</tt> file and you have a working <tt><strong>for</strong></tt> template. This is all you need to do to trigger the template:</p>
@@ -144,7 +202,7 @@
     <p>You can change the keyboard shortcut by setting the variable <tt><strong>g:jpTemplateKey</strong></tt> in your <tt><strong>.vimrc</strong></tt>. Example:</p>
     <pre><code>  <strong>let g:jpTemplateKey = '&lt;Esc&gt;'</strong></code></pre>
     <h3 id="demo-videos">Demonstration videos</h3>
-    <p>These are some demo videos I prepared of version 1.0 of the script. See the <a href="#features">Features</a> section for a list of features supported by that version.</p>
+    <p>These are some demo videos I prepared of version 1.0 of the script. See the <a href="#features">Features</a> section for a list of features supported by more recent versions.</p>
     <ul>
       <li><a href="jptemplate.swf">jptemplate.swf</a></li>
       <li><a href="jptemplate-gobject.swf">jptemplate-gobject.swf</a></li>

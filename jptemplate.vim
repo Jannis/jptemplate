@@ -2,7 +2,7 @@
 "
 " A simple yet powerful interactive templating system for VIM.
 "
-" Version 1.1 (released 2008-06-30).
+" Version 1.2 (released 2008-07-01).
 "
 " Copyright (c) 2008 Jannis Pohlmann <jannis@xfce.org>.
 "
@@ -25,21 +25,22 @@
 " Reserved variable names
 let s:reservedVariables = ['date']
 
-" Debug mode
-let s:debug = 0
-
 
 function! jp:Initialize ()
 
-  let defaults = {}
-  
-  " Default configuration
-  let defaults['g:jpTemplateDir'] = $HOME . '/.vim/jptemplate'
-  let defaults['g:jpTemplateKey'] = '<C-Tab>'
+  " List for default configuration
+  let defaults = []
+
+  " Default configuration values
+  call add (defaults, ['g:jpTemplateDir', $HOME . '/.vim/jptemplate'])
+  call add (defaults, ['g:jpTemplateKey', '<C-Tab>'])
+  call add (defaults, ['g:jpTemplateDateFormat', '%Y-%m-%d'])
+  call add (defaults, ['g:jpTemplateDefaults', {}])
+  call add (defaults, ['g:jpTemplateVerbose', 0])
 
   " Set default configuration for non-existent variables
-  for [variable, default] in items (filter (defaults, '!exists (v:key)'))
-    exec 'let ' . variable . ' = "' . default . '"'
+  for var in filter (defaults, '!exists (v:val[0])')
+    exec 'let ' . var[0] . ' = ' . string (var[1])
   endfor
 
 endfunction
@@ -122,8 +123,7 @@ function! jp:SetCursorPosition (lines)
     " Start editing in the next line
     let editInCurrentLine = 0
   else
-    " If the ${cursor} appears at the end of the line, start editing in the
-    " next line
+    " If ${cursor} appears at the end of the line, start editing in the next line
     if match (s:str, '${cursor}$') != -1
       let editInCurrentLine = 0
     endif
@@ -135,12 +135,42 @@ function! jp:SetCursorPosition (lines)
 endfunction
 
 
+function! jp:ParseExpression (expr)
+
+  " Determine position of the separator between name and value
+  let valuepos = match (a:expr, ':')
+
+  " Extract name and value strings
+  let name  = valuepos >= 0 ? strpart (a:expr, 0, valuepos) : a:expr
+  let value = valuepos >= 0 ? strpart (a:expr, valuepos + 1) : ''
+
+  " Return list with both strings
+  return [name, value]
+
+endfunction
+
+
+function! jp:EvaluateReservedVariable (name, value, variables)
+
+  let result = ''
+
+  if a:name == 'date'
+    let result = strftime (empty (a:value) ? g:jpTemplateDateFormat : a:value)
+  endif
+
+  return result
+
+endfunction
+
+
 function! jp:ProcessTemplate (info, template)
 
-  let matchpos  = 0
-  let names     = []
-  let variables = {}
+  let matchpos    = 0
+  let expressions = []
+  let variables   = {}
+  let reserved    = {}
 
+  " Make a string out of the template lines
   let s:str = join (a:template, ' ')
 
   " Detect all variable names of the template
@@ -153,56 +183,66 @@ function! jp:ProcessTemplate (info, template)
       " Stop search if there is no variable left
       break
     else
-      " Extract variable name (remove '${' and '}')
-      let name = s:str[start+2 : end-2]
+      " Extract variable expression (remove '${' and '}')
+      let expr = s:str[start+2 : end-2]
 
-      " Use default value if available
-      let valuepos = match (name, ':')
-      let value = valuepos >= 0 ? strpart (name, valuepos + 1) : ''
-      let displayName = valuepos >= 0 ? strpart (name, 0, valuepos) : name
+      " Extract variable name and default value */
+      let [name, value] = jp:ParseExpression (expr)
 
       if name == 'cursor'
         " Skip the ${cursor} variable
-        let matchpos = end
-      elseif get (s:reservedVariables, displayName) != 0
-        " Add reserved variable 
-        if !has_key (variables, name)
-          " TODO
-        endif
+      elseif count (s:reservedVariables, name) > 0
+        let reserved[expr] = ''
       else
-        " Only insert variables on their first occurance
+        " Only insert variables on their first appearance
         if !has_key (variables, name)
-          " Add variable name to the names list
-          call add (names, name)
+          " Add expression to the expression list
+          call add (expressions, expr)
 
-          " Add variable name (without ${}) to the dictionary
-          let variables[name] = value
+          " Add default (or empty) value to the dictionary
+          if empty (value)
+            if has_key (g:jpTemplateDefaults, name)
+              let variables[name] = g:jpTemplateDefaults[name]
+            endif
+          else
+            let variables[name] = value
+          endif
         endif
-
-        " Start next search at the end position of this variable
-        let matchpos = end
       endif
+
+      " Start next search at the end position of this expression
+      let matchpos = end
     endif
   endwhile
 
   " Ask the user to enter values for all variables
-  for name in names
-    let valuepos = match (name, ':')
-    let displayName = valuepos >= 0 ? strpart (name, 0, valuepos) : name
-    let variables[name] = input (displayName . ': ', variables[name])
+  for expr in expressions
+    let [name, value] = jp:ParseExpression (expr)
+    let variables[name] = input (name . ': ', variables[name])
   endfor
 
-  " Expand all variables
-  let index = 0
-  while index < len (a:template)
-    for [name, value] in items (variables)
-      let expr = '${' . name . '}'
+  " Evaluate reserved variables
+  for expr in keys (reserved)
+    let [name, value] = jp:ParseExpression (expr)
+    let replacement = jp:EvaluateReservedVariable (name, value, variables)
+    let reserved[expr] = replacement
+  endfor
+
+  " Expand all variables (custom and reserved)
+  for index in range (len (a:template))
+    for expr in expressions
+      let [name, value] = jp:ParseExpression (expr)
+      let expr = '${' . expr . '}'
+      let a:template[index] = substitute (a:template[index], expr, variables[name], 'g')
+    endfor
+
+    for [expr, value] in items (reserved)
+      let expr = '${' . expr . '}'
       let a:template[index] = substitute (a:template[index], expr, value, 'g')
     endfor
-    let index = index + 1
-  endwhile
+  endfor
 
-  " Backup characters before and after the template name
+  " Backup content before and after the template name
   let before = strpart (getline ('.'), 0, a:info['start'])
   let after  = strpart (getline ('.'), a:info['end'])
 
@@ -237,9 +277,6 @@ endfunction
 
 function! jp:InsertTemplate ()
 
-  " Determine the template directory
-  let templateDir = exists ('g:jpTemplateDir') ? g:jpTemplateDir : s:templateDir
-
   " Determine the filetype subdirectory
   let ftDir = &ft == '' ? 'general' : &ft
 
@@ -248,7 +285,7 @@ function! jp:InsertTemplate ()
     let info = jp:GetTemplateInfo ()
 
     " Generate the full template filename
-    let templateFile = templateDir .'/'. ftDir . '/' . info['name']
+    let templateFile = g:jpTemplateDir .'/'. ftDir . '/' . info['name']
 
     " Load the template file
     let template = jp:ReadTemplate (info['name'], templateFile)
@@ -257,7 +294,7 @@ function! jp:InsertTemplate ()
     call jp:ProcessTemplate (info, template)
   catch
     " Inform the user about errors
-    echo s:debug ? v:exception . " (in " . v:throwpoint . ")" : v:exception
+    echo g:jpTemplateVerbose ? v:exception . " (in " . v:throwpoint . ")" : v:exception
   endtry
 
 endfunction
