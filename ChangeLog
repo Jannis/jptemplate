@@ -1,5 +1,11 @@
 2008-06-30	Jannis Pohlmann <jannis@xfce.org>
 
+	* jptemplate.vim: Add jp:Initialize() and make the 
+	  configuration more flexible by using a dict for the default
+	  configuration. Prepare support for more reserved variables.
+
+2008-06-30	Jannis Pohlmann <jannis@xfce.org>
+
 	* Initial import into my git repository.
 
 vim:set sw=8 sts=8 ts=8 noexpandtab:

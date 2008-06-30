@@ -20,21 +20,29 @@
 " along with this program; if not, write to the Free Software
 " Foundation, Inc., 59 Temple Place, Suite 330, Boston,
 " MA  02111-1307  USA
-"
-" TODO:
-" - Possibility to abort with <Esc> or some other key
 
 
-" Default template dir used if g:jpTemplateDir is not set
-let s:templateDir = $HOME . '/.vim/jptemplate'
-
-" Default keyboard shortcut for triggering the template system
-if !exists ('g:jpTemplateKey')
-  let g:jpTemplateKey = '<C-Tab>'
-endif
+" Reserved variable names
+let s:reservedVariables = ['date']
 
 " Debug mode
 let s:debug = 0
+
+
+function! jp:Initialize ()
+
+  let defaults = {}
+  
+  " Default configuration
+  let defaults['g:jpTemplateDir'] = $HOME . '/.vim/jptemplate'
+  let defaults['g:jpTemplateKey'] = '<C-Tab>'
+
+  " Set default configuration for non-existent variables
+  for [variable, default] in items (filter (defaults, '!exists (v:key)'))
+    exec 'let ' . variable . ' = "' . default . '"'
+  endfor
+
+endfunction
 
 
 function! jp:GetTemplateInfo ()
@@ -151,10 +159,16 @@ function! jp:ProcessTemplate (info, template)
       " Use default value if available
       let valuepos = match (name, ':')
       let value = valuepos >= 0 ? strpart (name, valuepos + 1) : ''
+      let displayName = valuepos >= 0 ? strpart (name, 0, valuepos) : name
 
       if name == 'cursor'
         " Skip the ${cursor} variable
         let matchpos = end
+      elseif get (s:reservedVariables, displayName) != 0
+        " Add reserved variable 
+        if !has_key (variables, name)
+          " TODO
+        endif
       else
         " Only insert variables on their first occurance
         if !has_key (variables, name)
@@ -248,6 +262,9 @@ function! jp:InsertTemplate ()
 
 endfunction
 
+
+" Initialize jptemplate configuration
+call jp:Initialize ()
 
 " Map keyboard shortcut to the template system
 exec 'imap ' . g:jpTemplateKey . ' <Esc>:call jp:InsertTemplate()<CR>'
