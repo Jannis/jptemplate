@@ -1,6 +1,11 @@
 2008-07-01	Jannis Pohlmann <jannis@xfce.org>
 
+	* doc/index.html: Change page title.
+
+2008-07-01	Jannis Pohlmann <jannis@xfce.org>
+
 	* Version 1.3 released!
+	* doc/index.html: Update documentation.
 	* jptemplate.vim: Fix case sensitivity issues and problems with
 	  variables appearing multiple times: Variables are now clearly
 	  case sensitive. Multiple occurances like '${x:i} ${x}' yield
