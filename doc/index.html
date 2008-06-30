@@ -1,0 +1,160 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!-- vi:set sw=2 sts=2 et ai nocindent: -->
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>JPTemplate: A comfortable and interactive template system for VIM</title>
+    <link rel="stylesheet" href="http://www.w3.org/StyleSheets/Core/Steely" media="all" />
+    <style type="text/css" media="all">
+      h3 { font-size:1.35em; }
+    </style>
+  </head>
+  <body>
+    <h1>JPTemplate &#8212; A comfortable and interactive template system for VIM</h1>
+    <p>Written by Jannis Pohlmann, February 2008. Last updated on June 30th, 2008.</p>
+
+    <ol>
+      <li><a href="#introduction">Introduction</a>
+        <ol>
+          <li><a href="#features">Features</a></li>
+        </ol>
+      </li>
+      <li><a href="#prerequisites">Prerequisites</a></li>
+      <li><a href="#installation">Installation</a>
+        <ol>
+          <li><a href="#install-plugin">Installing the plugin</a></li>
+          <li><a href="#install-config">Configuring VIM</a></li>
+        </ol>
+      </li>
+      <li><a href="#usage">Usage</a>
+        <ol>
+          <li><a href="#writing-templates">Writing templates</a>
+            <ol>
+              <li><a href="#directory-structure">Directory structure</a></li>
+              <li><a href="#reserved-names">Reserved variable names</a></li>
+            </ol>
+          </li>
+          <li>
+            <a href="#using-templates">Using templates</a>
+            <ol>
+              <li><a href="#keyboard-shortcut">Changing the keyboard shorctut</a></li>
+            </ol>
+          </li>
+          <li><a href="#demo-videos">Demonstration videos</a></li>
+        </ol>
+      </li>
+      <li><a href="#download">Download</a></li>
+      <li><a href="#contact">Bugs and feature requests</a></li>
+    </ol>
+
+    <h2 id="introduction">Introduction</h2>
+    <h3 id="features">Features</h3>
+    <dl>
+      <dt>Version 1.0</dt>
+      <dd>
+        <ul>
+          <li>User variables (replaced with user input)</li>
+          <li>Reserved variables (automatically replaced, e.g. with current date)</li>
+          <li>Indentation</li>
+          <li>Separate templates for different filetypes</li>
+        </ul>
+      </dd>
+      <dt>Version 1.1 (<strong>NEW</strong>)</dt>
+      <dd>
+        <ul>
+          <li>Configurable keyboard shortcut</li>
+          <li>Default values for variables</li>
+        </ul>
+      </dd>
+    </dl>
+    
+    <h2 id="prerequisites">Prerequisites</h2>
+    <p>All you need to have is VIM (no idea as of which version the plugin works) with filetype detection enabled. To enable this, put the following into your <tt><strong>.vimrc</strong></tt>:</p>
+    <pre><code>  <strong>filetype plugin on</strong></code></pre>
+
+    <h2 id="installation">Installation</h2>
+    <h3 id="install-plugin">Installing the plugin</h3>
+    <p>To install the plugin, just copy <tt>jptemplate.vim</tt> to the VIM plugin directory.</p>
+    <pre><code>  <strong>cp jptemplate.vim $HOME/.vim/plugin/</strong></code></pre>
+
+    <h3 id="install-config">Configuring VIM</h3>
+    <p>All you need to do to configure VIM is to define the directory where all templates can be found. By default <strong><tt>$HOME/.vim/jptemplate/</tt></strong> is used.</p>
+    <p>If you want to define a directory on your own, put the following into your <tt><strong>.vimrc</strong></tt>:</p>
+    <pre><code>  <strong>let g:jpTemplateDir = '/path/to/the/template/directory'</strong></code></pre>
+
+    <h2 id="usage">Usage</h2>
+    <h3 id="writing-templates">Writing templates</h3>
+    <p>Writing templates is easy. They're plain text files with embedded variables. When triggering a template, you are asked to enter values for most of these variables. After that the template is inserted into your document and all variables are replaced by the values you defined before.</p>
+    <p>Variables are defined using the following syntax: <tt><strong>${put variable name here}</strong></tt>. You can optionally provide a default value with <tt><strong>${variable name:default value}</strong></tt>.</p>
+    <p>This is an example for a simple <tt>for</tt> loop:</p>
+    <pre><code>  <strong>for (${initializer expression:int i = 0}; ${loop test expression}; ${counting expression:++i})
+    {
+      ${cursor}
+    }</strong></code></pre>
+    <p>Please not that the <tt><strong>${cursor}</strong></tt> variable is special. See the section <a href="#reserved-names">Reserved names</a> for more information about <tt><strong>${cursor}</strong></tt> and other reserved names.</p>
+    <p>You can also define one variable to appear several times in the same template. In this case you'll be asked only once to enter a value for the variable. Imagine a signature template:</p>
+    <pre><code>  <strong>Yours faithfully,
+  ${name}
+  
+  Address:
+    ${name}
+    ${street}
+    ${city}</strong></code></pre>
+    <h4 id="directory-structure">Directory structure</h4>
+    <p>This section deals with the structure of the template directory. See section <a href="#install-config">Configuring VIM</a> on how to define it.</p>
+    <p>Let's assume for now that you are using the default template directory, which is <tt><strong>$HOME/.vim/jptemplate/</strong></tt>. This is how the directory structure has to look like:</p>
+    <pre><code>  <strong>$HOME/.vim/jptemplate/
+    cpp/
+      class
+      for
+      fun
+      if
+      ...
+    c -> cpp/
+    general/
+    ruby/
+      class
+      def
+      for
+      if
+      module
+      ...
+    sh/
+      ...
+    ...</strong></code></pre>
+    <p>Each subdirectory contains templates for one VIM filetype. I guess the template filenames are pretty self-explanatory: Each filename represents the name you have to enter to trigger the template in VIM. Of course you can create symlinks everywhere if you like (as I did with <tt><strong>c -&gt; cpp/</strong></tt> in the example). Note that the <tt><strong>general/</tt></strong> directory is special as it contains templates for unknown filetypes, like empty files with no extension.</p>
+    <p><strong>Hint:</strong> If you need to find out the filetype of a file you want to write a plugin for, just enter <tt><strong>:echo &ft</strong></tt> and VIM will tell you.</p>
+    <h4 id="reserved-names">Reserved names</h4>
+    <p>The following table illustrates which variables are reserved for special cases:</p>
+    <table style="margin-left:2em;" cellpadding="0" cellspacing="0">
+      <tr>
+        <th style="padding-right:2em;">Variable</th>
+        <th>Usage / Effect</th>
+      </tr>
+      <tr>
+        <td><tt><strong>${cursor}</strong></tt></td>
+        <td>This is where the cursor will be located after the template has been inserted into your document.</td>
+      </tr>
+    </table>
+    <h3 id="using-templates">Using templates</h3>
+    <p>Using the templates is pretty straight-forwarded. Let's assume you're editing a <tt>C++</tt> file and you have a working <tt><strong>for</strong></tt> template. This is all you need to do to trigger the template:</p>
+    <pre><code>  <strong>for&lt;C-Tab&gt;</strong></code></pre>
+    <p>Pressing <tt><strong>&lt;C-Tab&gt;</strong></tt> will lookup the template <tt><strong>for</strong></tt>. If the template contains any non-reserved variables, VIM will start asking you to enter values for these variables. Once all questions have been answered, the template will inserted where the <tt><strong>for</strong></tt> was in your code. If the template contains <tt><strong>${cursor}</strong></tt>, the cursor will be moved to that position.</p>
+    <h4 id="keyboard-shortcut">Changing the keyboard shortcut</h4>
+    <p>You can change the keyboard shortcut by setting the variable <tt><strong>g:jpTemplateKey</strong></tt> in your <tt><strong>.vimrc</strong></tt>. Example:</p>
+    <pre><code>  <strong>let g:jpTemplateKey = '&lt;Esc&gt;'</strong></code></pre>
+    <h3 id="demo-videos">Demonstration videos</h3>
+    <p>These are some demo videos I prepared of version 1.0 of the script. See the <a href="#features">Features</a> section for a list of features supported by that version.</p>
+    <ul>
+      <li><a href="jptemplate.swf">jptemplate.swf</a></li>
+      <li><a href="jptemplate-gobject.swf">jptemplate-gobject.swf</a></li>
+      <li><a href="jptemplate-java.swf">jptemplate-java.swf</a></li>
+    </ul>
+    
+    <h2 id="download">Download</h2>
+    <p><a href="http://www.vim.org/scripts/script.php?script_id=2278">Download site on vim.org</a></p>
+    
+    <h2 id="contact">Bugs and feature requests</h2>
+    <p>Please send bugs and feature requests to <a href="mailto:jannis@xfce.org">jannis@xfce.org</a>. Thanks!</p>
+  </body>
+</html>
