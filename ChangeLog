@@ -1,5 +1,9 @@
 2008-06-30	Jannis Pohlmann <jannis@xfce.org>
 
+	* TODO: TODO file added.
+
+2008-06-30	Jannis Pohlmann <jannis@xfce.org>
+
 	* jptemplate.vim: Add jp:Initialize() and make the 
 	  configuration more flexible by using a dict for the default
 	  configuration. Prepare support for more reserved variables.
