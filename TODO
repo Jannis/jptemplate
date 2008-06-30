@@ -1,8 +1,5 @@
 TODO
 ========================================================================
 
-  * Ask for variable values in correct order
   * Make it possible to abort while entering values
-  * Add support for reserved variables like date. Example:
-      ${date}          (using g:jpTemplateDateFormat)
-      ${date:%Y-%m-%d} (using a custom format string)
+  * Add more special variables

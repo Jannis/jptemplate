@@ -73,12 +73,18 @@
           <li>Default values for variables</li>
         </ul>
         </dd>
-      <dt>Version 1.2 (<strong>NEW</strong>)</dt>
+      <dt>Version 1.2</dt>
       <dd>
         <ul>
           <li>Support for special variables (with and without default value)</li>
           <li>Support for global defaults for user variables</li>
           <li>New special variable: <tt>${date}</tt></li>
+        </ul>
+      </dd>
+      <dt>Verson 1.3 (<strong>NEW</strong>)</dt>
+      <dd>
+        <ul>
+          <li>Bugfixes only</li>
         </ul>
       </dd>
     </dl>
@@ -140,7 +146,7 @@
     {
       ${cursor}
     }</strong></code></pre>
-    <p>Please not that the <tt><strong>${cursor}</strong></tt> variable is special. See the section <a href="#special-variables">Special variables</a> for more information about <tt><strong>${cursor}</strong></tt> and other special variables.</p>
+    <p>Please note that the <tt><strong>${cursor}</strong></tt> variable is special. See the section <a href="#special-variables">Special variables</a> for more information about <tt><strong>${cursor}</strong></tt> and other special variables.</p>
     <p>You can also define one variable to appear several times in the same template. In this case you'll be asked only once to enter a value for the variable. Imagine a signature template:</p>
     <pre><code>  <strong>Yours faithfully,
   ${name}
@@ -149,6 +155,8 @@
     ${name}
     ${street}
     ${city}</strong></code></pre>
+    <p>Variables are case sensitive. Multiple occurences like <tt><strong>${x:i} ${x}'</strong></tt> will yield <tt><strong>i i</strong></tt>. <tt><strong>${x} ${x:i}</strong></tt> with a global default <tt><strong>j</strong></tt> for <tt><strong>x</strong></tt> will result in <tt><strong>i i</strong></tt>. Templates like <tt><strong>${x:i} ${x:j} ...</strong></tt> end up as <tt><strong>i i</strong></tt>.</p>
+
     <h4 id="directory-structure">Directory structure</h4>
     <p>This section deals with the structure of the template directory. See section <a href="#install-config">Configuring VIM</a> on how to define it.</p>
     <p>Let's assume for now that you are using the default template directory, which is <tt><strong>$HOME/.vim/jptemplate/</strong></tt>. This is how the directory structure has to look like:</p>

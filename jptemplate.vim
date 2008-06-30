@@ -2,7 +2,7 @@
 "
 " A simple yet powerful interactive templating system for VIM.
 "
-" Version 1.2 (released 2008-07-01).
+" Version 1.3 (released 2008-07-01).
 "
 " Copyright (c) 2008 Jannis Pohlmann <jannis@xfce.org>.
 "
@@ -199,12 +199,18 @@ function! jp:ProcessTemplate (info, template)
           " Add expression to the expression list
           call add (expressions, expr)
 
-          " Add default (or empty) value to the dictionary
-          if empty (value)
-            if has_key (g:jpTemplateDefaults, name)
-              let variables[name] = g:jpTemplateDefaults[name]
-            endif
-          else
+          " Set variable value to ''
+          let variables[name] = ''
+        endif
+
+        if empty (value)
+          " Use global default if the variable value is empty
+          if empty (variables[name]) && has_key (g:jpTemplateDefaults, name)
+            let variables[name] = g:jpTemplateDefaults[name]
+          endif
+        else
+          " Use local default (first occurence in the template only) 
+          if empty (variables[name]) || g:jpTemplateDefaults[name] == variables[name]
             let variables[name] = value
           endif
         endif
@@ -232,7 +238,7 @@ function! jp:ProcessTemplate (info, template)
   for index in range (len (a:template))
     for expr in expressions
       let [name, value] = jp:ParseExpression (expr)
-      let expr = '${' . expr . '}'
+      let expr = '${' . name . '\(:[^{}]\+\)\?}'
       let a:template[index] = substitute (a:template[index], expr, variables[name], 'g')
     endfor
 

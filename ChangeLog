@@ -1,5 +1,17 @@
 2008-07-01	Jannis Pohlmann <jannis@xfce.org>
 
+	* Version 1.3 released!
+	* jptemplate.vim: Fix case sensitivity issues and problems with
+	  variables appearing multiple times: Variables are now clearly
+	  case sensitive. Multiple occurances like '${x:i} ${x}' yield
+	  'i i', multiple occurences of variables with a global 
+	  default 'j' like '${x} ${x:i}' end up as 'i i'. Multiple 
+	  occurences of variables with one or more local defaults, like
+	  '${x:i} ${x:j} ...' yield an input with 'i' as default value.
+
+
+2008-07-01	Jannis Pohlmann <jannis@xfce.org>
+
 	* Version 1.2 released!
 	* doc/index.html: Update documentation.
 	* jptemplate.vim: Use list for the default configuration
