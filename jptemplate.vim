@@ -23,7 +23,7 @@
 
 
 " Reserved variable names
-let s:reservedVariables = ['date','shell']
+let s:reservedVariables = ['date','shell','interactive_shell']
 
 " Variable value history
 let s:rememberedValues = {}
@@ -161,6 +161,9 @@ function! jp:EvaluateReservedVariable (name, value, variables)
     let result = strftime (empty (a:value) ? g:jpTemplateDateFormat : a:value)
   elseif a:name == 'shell'
     let result = system(a:value)
+  elseif a:name == 'interactive_shell'
+    let command = input ('interactive_shell: ', a:value)
+    let result = system(command)
   endif
 
   return result
@@ -177,6 +180,9 @@ function! jp:ExpandTemplate (info, template)
   " Merge lines of the template and then split them up again.
   " This makes multi-line variable values possible
   let mergedTemplate = split (join (a:template, "\n"), "\n")
+
+  " Define cnt as the number of inserted lines
+  let cnt = 0
 
   " Insert template between before and after
   for cnt in range (0, len (mergedTemplate)-1)

@@ -1,5 +1,13 @@
 2008-07-04	Jannis Pohlmann <jannis@xfce.org>
 
+	* jptemplate.vim: Fix error with cnt not being defined in
+	  jp:ExpandTemplate() when the template contains nothing. Add 
+	  support for ${interactive_shell:<optional command>} variable
+	  which allows you to define which shell command to run at
+	  runtime instead of hard-coding it in the template.
+
+2008-07-04	Jannis Pohlmann <jannis@xfce.org>
+
 	* jptemplate.vim: Remember the last value of all non-special
 	  variables without a local default value. If there are two
 	  variables with the same but only the second has a local
