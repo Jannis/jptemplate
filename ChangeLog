@@ -1,5 +1,13 @@
 2008-07-04	Jannis Pohlmann <jannis@xfce.org>
 
+	* jptemplate.vim: Remember the last value of all non-special
+	  variables without a local default value. If there are two
+	  variables with the same but only the second has a local
+	  default value, remember the value for the one without 
+	  local default anyway.
+
+2008-07-04	Jannis Pohlmann <jannis@xfce.org>
+
 	* jptemplate.vim: Implement ${shell:<shell command here>} 
 	  special variable. Add support for multiline variable values 
 	  as required for this variable. Move template insertion code

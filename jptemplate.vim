@@ -25,6 +25,9 @@
 " Reserved variable names
 let s:reservedVariables = ['date','shell']
 
+" Variable value history
+let s:rememberedValues = {}
+
 
 function! jp:Initialize ()
 
@@ -237,16 +240,21 @@ function! jp:ProcessTemplate (info, template)
           let variables[name] = ''
         endif
 
+        " Check whether local default value is defined or not
         if empty (value)
-          " Use global default if the variable value is empty
-          if empty (variables[name]) && has_key (g:jpTemplateDefaults, name)
-            let variables[name] = g:jpTemplateDefaults[name]
+          " If not, check if variable value is empty
+          if empty (variables[name])
+            " If so, either set it to the last remembered value or the global
+            " default if it exists
+            if has_key (s:rememberedValues, name)
+              let variables[name] = s:rememberedValues[name]
+            elseif has_key (g:jpTemplateDefaults, name)
+              let variables[name] = g:jpTemplateDefaults[name]
+            endif
           endif
         else
           " Use local default (first occurence in the template only)
-          if empty (variables[name]) || g:jpTemplateDefaults[name] == variables[name]
-            let variables[name] = value
-          endif
+          let variables[name] = value
         endif
       endif
 
@@ -259,6 +267,7 @@ function! jp:ProcessTemplate (info, template)
   for expr in expressions
     let [name, value] = jp:ParseExpression (expr)
     let variables[name] = input (name . ': ', variables[name])
+    let s:rememberedValues[name] = variables[name]
   endfor
 
   " Evaluate reserved variables
