@@ -1,3 +1,10 @@
+2008-07-04	Jannis Pohlmann <jannis@xfce.org>
+
+	* jptemplate.vim: Implement ${shell:<shell command here>} 
+	  special variable. Add support for multiline variable values 
+	  as required for this variable. Move template insertion code
+	  into jp:ExpandTemplate().
+
 2008-07-01	Jannis Pohlmann <jannis@xfce.org>
 
 	* doc/index.html: Change page title.

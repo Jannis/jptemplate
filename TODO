@@ -3,3 +3,6 @@ TODO
 
   * Make it possible to abort while entering values
   * Add more special variables
+  * Improve variable syntax. Especially the ${shell} variable needs
+    characters like $, e.g. for ${shell:echo $XDG_DATA_DIRS}
+  

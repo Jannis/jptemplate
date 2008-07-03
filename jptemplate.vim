@@ -23,7 +23,7 @@
 
 
 " Reserved variable names
-let s:reservedVariables = ['date']
+let s:reservedVariables = ['date','shell']
 
 
 function! jp:Initialize ()
@@ -156,9 +156,43 @@ function! jp:EvaluateReservedVariable (name, value, variables)
 
   if a:name == 'date'
     let result = strftime (empty (a:value) ? g:jpTemplateDateFormat : a:value)
+  elseif a:name == 'shell'
+    let result = system(a:value)
   endif
 
   return result
+
+endfunction
+
+
+function! jp:ExpandTemplate (info, template)
+
+  " Backup content before and after the template name
+  let before = strpart (getline ('.'), 0, a:info['start'])
+  let after  = strpart (getline ('.'), a:info['end'])
+
+  " Merge lines of the template and then split them up again.
+  " This makes multi-line variable values possible
+  let mergedTemplate = split (join (a:template, "\n"), "\n")
+
+  " Insert template between before and after
+  for cnt in range (0, len (mergedTemplate)-1)
+    if cnt == 0
+      call setline (line ('.'), before . mergedTemplate[cnt])
+    else
+      call append (line ('.') + cnt - 1, a:info['indent'] . mergedTemplate[cnt])
+    endif
+    if cnt == len (mergedTemplate)-1
+      call setline (line ('.') + cnt, getline (line ('.') + cnt) . after)
+
+      " Move cursor to the end of the inserted template. ${cursor} may
+      " overwrite this
+      call cursor(line ('.'), len (getline (line ('.') + cnt)))
+    endif
+  endfor
+
+  " Return number of inserted lines
+  return cnt
 
 endfunction
 
@@ -209,7 +243,7 @@ function! jp:ProcessTemplate (info, template)
             let variables[name] = g:jpTemplateDefaults[name]
           endif
         else
-          " Use local default (first occurence in the template only) 
+          " Use local default (first occurence in the template only)
           if empty (variables[name]) || g:jpTemplateDefaults[name] == variables[name]
             let variables[name] = value
           endif
@@ -248,28 +282,11 @@ function! jp:ProcessTemplate (info, template)
     endfor
   endfor
 
-  " Backup content before and after the template name
-  let before = strpart (getline ('.'), 0, a:info['start'])
-  let after  = strpart (getline ('.'), a:info['end'])
-
   " Insert template into the code line by line
-  for cnt in range (0, len (a:template)-1)
-    if cnt == 0
-      call setline (line ('.'), before . a:template[cnt])
-    else
-      call append (line ('.') + cnt - 1, a:info['indent'] . a:template[cnt])
-    endif
-    if cnt == len (a:template)-1
-      call setline (line ('.') + cnt, getline (line ('.') + cnt) . after)
-
-      " Move cursor to the end of the inserted template. ${cursor} may
-      " overwrite this
-      call cursor(line ('.'), len (getline (line ('.') + cnt)))
-    endif
-  endfor
+  let insertedLines = jp:ExpandTemplate (a:info, a:template)
 
   " Set the cursor position
-  let editInCurrentLine = jp:SetCursorPosition (cnt)
+  let editInCurrentLine = jp:SetCursorPosition (insertedLines)
 
   " Return to insert mode
   if editInCurrentLine
