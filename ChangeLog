@@ -1,3 +1,8 @@
+2008-07-07	Jannis Pohlmann <jannis@xfce.org>
+
+	* jptemplate.vim: Allow $ to appear in variable names and
+	  default values. Perl and shell script people: enjoy!
+
 2008-07-04	Jannis Pohlmann <jannis@xfce.org>
 
 	* jptemplate.vim: Fix error with cnt not being defined in

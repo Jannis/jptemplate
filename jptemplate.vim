@@ -219,8 +219,8 @@ function! jp:ProcessTemplate (info, template)
   " Detect all variable names of the template
   while 1
     " Find next variable start and end position
-    let start = match    (s:str, '${[^${}]\+}', matchpos)
-    let end   = matchend (s:str, '${[^${}]\+}', matchpos)
+    let start = match    (s:str, '${[^{}]\+}', matchpos)
+    let end   = matchend (s:str, '${[^{}]\+}', matchpos)
 
     if start < 0
       " Stop search if there is no variable left
