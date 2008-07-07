@@ -28,6 +28,9 @@ let s:reservedVariables = ['date','shell','interactive_shell']
 " Variable value history
 let s:rememberedValues = {}
 
+" Characters to be escaped before the substitute() call
+let s:escapeCharacters = '&~\'
+
 
 function! jp:Initialize ()
 
@@ -288,11 +291,13 @@ function! jp:ProcessTemplate (info, template)
     for expr in expressions
       let [name, value] = jp:ParseExpression (expr)
       let expr = '${' . name . '\(:[^{}]\+\)\?}'
-      let a:template[index] = substitute (a:template[index], expr, variables[name], 'g')
+      let value = escape(variables[name], s:escapeCharacters)
+      let a:template[index] = substitute (a:template[index], expr, value, 'g')
     endfor
 
     for [expr, value] in items (reserved)
       let expr = '${' . expr . '}'
+      let value = escape(value, s:escapeCharacters)
       let a:template[index] = substitute (a:template[index], expr, value, 'g')
     endfor
   endfor

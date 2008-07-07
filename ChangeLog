@@ -1,5 +1,9 @@
 2008-07-07	Jannis Pohlmann <jannis@xfce.org>
 
+	* jptemplate.vim: Escape &,~ and \ before calling substitute().
+
+2008-07-07	Jannis Pohlmann <jannis@xfce.org>
+
 	* jptemplate.vim: Allow $ to appear in variable names and
 	  default values. Perl and shell script people: enjoy!
 
