@@ -2,7 +2,7 @@
 "
 " A simple yet powerful interactive templating system for VIM.
 "
-" Version 1.3 (released 2008-07-01).
+" Version 1.4 (released 2008-07-07).
 "
 " Copyright (c) 2008 Jannis Pohlmann <jannis@xfce.org>.
 "
@@ -163,10 +163,14 @@ function! jp:EvaluateReservedVariable (name, value, variables)
   if a:name == 'date'
     let result = strftime (empty (a:value) ? g:jpTemplateDateFormat : a:value)
   elseif a:name == 'shell'
-    let result = system(a:value)
+    if !empty (a:value)
+      let result = system (a:value)
+    endif
   elseif a:name == 'interactive_shell'
     let command = input ('interactive_shell: ', a:value)
-    let result = system(command)
+    if !empty (command)
+      let result = system (command)
+    endif
   endif
 
   return result
@@ -187,21 +191,27 @@ function! jp:ExpandTemplate (info, template)
   " Define cnt as the number of inserted lines
   let cnt = 0
 
-  " Insert template between before and after
-  for cnt in range (0, len (mergedTemplate)-1)
-    if cnt == 0
-      call setline (line ('.'), before . mergedTemplate[cnt])
-    else
-      call append (line ('.') + cnt - 1, a:info['indent'] . mergedTemplate[cnt])
-    endif
-    if cnt == len (mergedTemplate)-1
-      call setline (line ('.') + cnt, getline (line ('.') + cnt) . after)
+  " Remove template string if the resulting template is empty
+  if len (mergedTemplate) == 0
+    call setline (line ('.'), before . after)
+    call cursor (line ('.'), len (before) + 1)
+  else
+    " Insert template between before and after
+    for cnt in range (0, len (mergedTemplate) - 1)
+      if cnt == 0
+        call setline (line ('.'), before . mergedTemplate[cnt])
+      else
+        call append (line ('.') + cnt - 1, a:info['indent'] . mergedTemplate[cnt])
+      endif
+      if cnt == len (mergedTemplate) - 1
+        call setline (line ('.') + cnt, getline (line ('.') + cnt) . after)
 
-      " Move cursor to the end of the inserted template. ${cursor} may
-      " overwrite this
-      call cursor(line ('.'), len (getline (line ('.') + cnt)))
-    endif
-  endfor
+        " Move cursor to the end of the inserted template. ${cursor} may
+        " overwrite this
+        call cursor(line ('.'), len (getline (line ('.') + cnt)))
+      endif
+    endfor
+  endif
 
   " Return number of inserted lines
   return cnt
@@ -306,13 +316,17 @@ function! jp:ProcessTemplate (info, template)
   let insertedLines = jp:ExpandTemplate (a:info, a:template)
 
   " Set the cursor position
-  let editInCurrentLine = jp:SetCursorPosition (insertedLines)
+  if insertedLines > 0
+    let editInCurrentLine = jp:SetCursorPosition (insertedLines)
 
-  " Return to insert mode
-  if editInCurrentLine
-    startinsert
+    " Return to insert mode
+    if editInCurrentLine
+      startinsert
+    else
+      startinsert!
+    endif
   else
-    startinsert!
+    startinsert
   endif
 
 endfunction

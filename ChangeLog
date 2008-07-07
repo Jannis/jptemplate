@@ -1,5 +1,11 @@
 2008-07-07	Jannis Pohlmann <jannis@xfce.org>
 
+	* Version 1.4 released! 
+	* jptemplate.vim, docs/index.html: Fix issues with empty
+	  shell commands and empty template result.
+
+2008-07-07	Jannis Pohlmann <jannis@xfce.org>
+
 	* jptemplate.vim: Escape &,~ and \ before calling substitute().
 
 2008-07-07	Jannis Pohlmann <jannis@xfce.org>

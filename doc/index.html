@@ -81,10 +81,20 @@
           <li>New special variable: <tt>${date}</tt></li>
         </ul>
       </dd>
-      <dt>Verson 1.3 (<strong>NEW</strong>)</dt>
+      <dt>Verson 1.3</dt>
       <dd>
         <ul>
           <li>Bugfixes only</li>
+        </ul>
+      </dd>
+      <dt>Verson 1.4 (<strong>NEW</strong>)</dt>
+      <dd>
+        <ul>
+          <li>New special variables: <tt>${shell:&lt;put shell command here&gt;}</tt> and <tt>${interactive_shell:...}</tt></li>
+          <li>Remember last entered value for all non-special variables</li>
+          <li>Allow <tt>$</tt> to appear in variable names and values</li>
+          <li>Bugfix: Automatically escape <tt>&#38;</tt>, <tt>~</tt> and <tt>\</tt> in variable values to avoid unexpected behaviour</li>
+          <li>Bugfix: Just remove template trigger word if the resulting template is empty</li>
         </ul>
       </dd>
     </dl>
@@ -201,6 +211,19 @@
         <td><a href="http://vimdoc.sourceforge.net/htmldoc/eval.html#strftime()">strftime</a> format string (optional)</td>
         <td><tt><strong>${date}</strong></tt><br /><tt><strong>${date:%Y-%m-%d}</strong></tt></td>
         <td>Insert the current date.</td>
+      </tr>
+      <tr>
+        <td><tt><strong>${shell}</strong></tt></td>
+        <td>Shell command</td>
+        <td><tt><strong>${shell:ls -la}</strong></tt><br /><tt><strong>${shell:firefox &>/dev/null}</strong></tt></td>
+        <td>Run a shell command and replace the variable with its output.</td>
+      </tr>
+      <tr>
+        <td><tt><strong>${interactive_shell}</strong></tt></td>
+        <td>Shell command (optional)</td>
+        <td>See <tt><strong>${shell}</strong></tt></td>
+        <td>Same as <tt><strong>${shell}</strong></tt> but will ask you to enter a shell command prior to executing it.</td>
+      </tr>
     </table>
     <h3 id="using-templates">Using templates</h3>
     <p>Using the templates is pretty straight-forwarded. Let's assume you're editing a <tt>C++</tt> file and you have a working <tt><strong>for</strong></tt> template. This is all you need to do to trigger the template:</p>
