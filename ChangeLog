@@ -1,7 +1,19 @@
+2008-07-08	Jannis Pohlmann <jannis@xfce.org>
+
+	* Version 1.5 released!
+	* doc/index.html: Update documentation.
+	* jptemplate.vim: Really fix the cursor placement and the way
+	  of returning to insert mode this time. Rename 
+	  jp:SetCursorPosition() to jp:UpdateCursorPosition().
+	  Add new feature: Use 'general' template dir as a fallback for
+	  template lookup for any file type. This way it's possible to
+	  also use 'general' to make templates available in all file
+	  types.
+
 2008-07-07	Jannis Pohlmann <jannis@xfce.org>
 
 	* Version 1.4 released! 
-	* jptemplate.vim, docs/index.html: Fix issues with empty
+	* jptemplate.vim, doc/index.html: Fix issues with empty
 	  shell commands and empty template result.
 
 2008-07-07	Jannis Pohlmann <jannis@xfce.org>

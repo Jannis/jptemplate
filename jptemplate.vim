@@ -68,8 +68,23 @@ function! jp:GetTemplateInfo ()
   let info['name']  = part[info['start'] : info['end']]
 
   " Throw exception if no template name could be found
-  if info['name'] == ''
+  if empty (info['name'])
     throw 'No template name found at cursor'
+  endif
+
+  " Determine directory to load the template from (skip empty directories;
+  " each directory may override the ones before)
+  for dir in filter ([ 'general', &ft ], '!empty (v:val)')
+    let filename = g:jpTemplateDir .'/'. dir .'/'. info['name']
+    if filereadable (filename)
+      let info['filename'] = filename
+    endif
+  endfor
+
+  " Throw exception if the template file does not exist in any of these
+  " directories (or is not readable)
+  if !has_key (info, 'filename')
+    throw 'Template file not found'
   endif
 
   " Determine indentation
@@ -93,50 +108,48 @@ function! jp:ReadTemplate (name, filename)
 endfunction
 
 
-function! jp:SetCursorPosition (lines)
+function! jp:UpdateCursorPosition (lines, endColumn)
 
-  " Flag to be set to 1 if the template contains ${cursor}
-  let cursorFound = 0
+  " Define cursorPosition as the column to which the cursor is moved
+  let cursorPosition = -1
 
   for cnt in range (0, a:lines)
     " Search for ${cursor} in the current line
-    let s:str  = getline  (line ('.') + cnt)
-    let start  = match    (s:str, '${cursor}')
-    let end    = matchend (s:str, '${cursor}')
-    let before = strpart  (s:str, 0, start)
-    let after  = strpart  (s:str, end)
+    let str    = getline  (line ('.') + cnt)
+    let start  = match    (str, '${cursor}')
+    let end    = matchend (str, '${cursor}')
+    let before = strpart  (str, 0, start)
+    let after  = strpart  (str, end)
 
     if start >= 0
       " Remove ${cursor} and move the cursor to the desired position
       call setline (line ('.') + cnt, before . after)
       call cursor (line ('.') + cnt, start+1)
 
-      " Set cursor found flag
-      let cursorFound = 1
+      let cursorPosition = start
 
       " We're done
       break
     endif
   endfor
 
-  " Set to 1 if ${cursor} appears somewhere in the middle of a template line
-  let editInCurrentLine = 1
-
-  if cursorFound == 0
-    " Move cursor to the end of the template
-    call cursor (line ('.') + cnt, '.')
-
-    " Start editing in the next line
-    let editInCurrentLine = 0
-  else
-    " If ${cursor} appears at the end of the line, start editing in the next line
-    if match (s:str, '${cursor}$') != -1
-      let editInCurrentLine = 0
+  " Update cursor position in case no ${cursor} was found in the template
+  " and the resulting template was not empty
+  if cursorPosition == -1 && a:lines >= 0
+    if a:lines == 0
+      call cursor (line ('.'), a:endColumn + 1)
+    else
+      call cursor (line ('.') + a:lines, a:endColumn + 1)
     endif
   endif
 
-  " Return information about where to start editing
-  return editInCurrentLine
+  " Return to insert mode (distinguish between 'in the middle of the line' and
+  " 'at the end of the line')
+  if col ('.') == len (getline ('.')) 
+    startinsert!
+  else
+    startinsert
+  endif
 
 endfunction
 
@@ -192,9 +205,10 @@ function! jp:ExpandTemplate (info, template)
   let cnt = 0
 
   " Remove template string if the resulting template is empty
-  if len (mergedTemplate) == 0
+  if empty (mergedTemplate)
     call setline (line ('.'), before . after)
     call cursor (line ('.'), len (before) + 1)
+    let cnt = -1
   else
     " Insert template between before and after
     for cnt in range (0, len (mergedTemplate) - 1)
@@ -205,16 +219,24 @@ function! jp:ExpandTemplate (info, template)
       endif
       if cnt == len (mergedTemplate) - 1
         call setline (line ('.') + cnt, getline (line ('.') + cnt) . after)
-
-        " Move cursor to the end of the inserted template. ${cursor} may
-        " overwrite this
-        call cursor(line ('.'), len (getline (line ('.') + cnt)))
       endif
     endfor
   endif
 
-  " Return number of inserted lines
-  return cnt
+  " Define start and end columns of the template
+  let startColumn = len (before)
+  if empty (mergedTemplate)
+    let endColumn = startColumn
+  else
+    if cnt == 0
+      let endColumn = startColumn + len (mergedTemplate[0])
+    else
+      let endColumn = len (a:info['indent'] . mergedTemplate[len (mergedTemplate) - 1])
+    endif
+  endif
+
+  " Return number of inserted lines, start and end columns
+  return [cnt, startColumn, endColumn]
 
 endfunction
 
@@ -313,39 +335,22 @@ function! jp:ProcessTemplate (info, template)
   endfor
 
   " Insert template into the code line by line
-  let insertedLines = jp:ExpandTemplate (a:info, a:template)
+  let [insertedLines, startColumn, endColumn] = jp:ExpandTemplate (a:info, a:template)
 
-  " Set the cursor position
-  if insertedLines > 0
-    let editInCurrentLine = jp:SetCursorPosition (insertedLines)
-
-    " Return to insert mode
-    if editInCurrentLine
-      startinsert
-    else
-      startinsert!
-    endif
-  else
-    startinsert
-  endif
+  " Update the cursor position and return to insert mode 
+  call jp:UpdateCursorPosition (insertedLines, endColumn)
 
 endfunction
 
 
 function! jp:InsertTemplate ()
 
-  " Determine the filetype subdirectory
-  let ftDir = &ft == '' ? 'general' : &ft
-
   try
     " Detect bounds of the template name as well as the name itself
     let info = jp:GetTemplateInfo ()
 
-    " Generate the full template filename
-    let templateFile = g:jpTemplateDir .'/'. ftDir . '/' . info['name']
-
     " Load the template file
-    let template = jp:ReadTemplate (info['name'], templateFile)
+    let template = jp:ReadTemplate (info['name'], info['filename'])
 
     " Do the hard work: Process the template
     call jp:ProcessTemplate (info, template)

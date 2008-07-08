@@ -13,7 +13,7 @@
   </head>
   <body>
     <h1>JPTemplate &#8212; A simple yet powerful interactive template system for VIM</h1>
-    <p>Written by Jannis Pohlmann, February 2008. Last updated on July 7th, 2008.</p>
+    <p>Written by Jannis Pohlmann, February 2008. Last updated on July 8th, 2008.</p>
 
     <ol>
       <li><a href="#introduction">Introduction</a>
@@ -87,7 +87,7 @@
           <li>Bugfixes only</li>
         </ul>
       </dd>
-      <dt>Verson 1.4 (<strong>NEW</strong>)</dt>
+      <dt>Verson 1.4</dt>
       <dd>
         <ul>
           <li>New special variables: <tt>${shell:&lt;put shell command here&gt;}</tt> and <tt>${interactive_shell:...}</tt></li>
@@ -95,6 +95,13 @@
           <li>Allow <tt>$</tt> to appear in variable names and values</li>
           <li>Bugfix: Automatically escape <tt>&#38;</tt>, <tt>~</tt> and <tt>\</tt> in variable values to avoid unexpected behaviour</li>
           <li>Bugfix: Just remove template trigger word if the resulting template is empty</li>
+        </ul>
+      </dd>
+      <dt>Verson 1.5 (<strong>NEW</strong>)</dt>
+      <dd>
+        <ul>
+          <li>New feature: Use the <tt>general/</tt> template directory as a fallback lookup directory for all file types. This makes it possible to use the same templates for different file types (and override some of them if you like)</li>
+          <li>Bugfix: Really fix the cursor placement this time</li>
         </ul>
       </dd>
     </dl>
@@ -189,7 +196,7 @@
     sh/
       ...
     ...</strong></code></pre>
-    <p>Each subdirectory contains templates for one VIM filetype. I guess the template filenames are pretty self-explanatory: Each filename represents the name you have to enter to trigger the template in VIM. Of course you can create symlinks everywhere if you like (as I did with <tt><strong>c -&gt; cpp/</strong></tt> in the example). Note that the <tt><strong>general/</tt></strong> directory is special as it contains templates for unknown filetypes, like empty files with no extension.</p>
+    <p>Each subdirectory contains templates for one VIM file type. I guess the template filenames are pretty self-explanatory: Each filename represents the name you have to enter to trigger the template in VIM. Of course you can create symlinks everywhere if you like (as I did with <tt><strong>c -&gt; cpp/</strong></tt> in the example). Note that the <tt><strong>general/</tt></strong> directory is special: it is used as a fallback lookup directory for all filetypes (even unknown ones). This way you can share templates across different file types.</p>
     <p><strong>Hint:</strong> If you need to find out the filetype of a file you want to write a plugin for, just enter <tt><strong>:echo &ft</strong></tt> and VIM will tell you.</p>
     <h4 id="special-variables">Special variables</h4>
     <p>The following table illustrates which variables are reserved for special situations or just for some <em>magic</em>. Some variables require a parameter.</p>
