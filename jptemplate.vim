@@ -2,7 +2,7 @@
 "
 " A simple yet powerful interactive templating system for VIM.
 "
-" Version 1.4 (released 2008-07-07).
+" Version 1.5 (released 2008-07-08).
 "
 " Copyright (c) 2008 Jannis Pohlmann <jannis@xfce.org>.
 "

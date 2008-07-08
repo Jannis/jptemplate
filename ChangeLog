@@ -1,5 +1,9 @@
 2008-07-08	Jannis Pohlmann <jannis@xfce.org>
 
+	* jptemplate.vim: Fix version string.
+
+2008-07-08	Jannis Pohlmann <jannis@xfce.org>
+
 	* Version 1.5 released!
 	* doc/index.html: Update documentation.
 	* jptemplate.vim: Really fix the cursor placement and the way
