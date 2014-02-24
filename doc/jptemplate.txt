@@ -1,0 +1,295 @@
+*jptemplate.txt*	For Vim version 7.3.	Last change: 2014 Feb 25
+
+Version: 1.5
+Author : Jannis Pohlmann <jannis@xfce.org>
+License: MIT license  {{{
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or (at
+  your option) any later version.
+
+  This program is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+  MA  02111-1307  USA
+}}}
+
+CONTENTS						*jptemplate-contents*
+
+1. Introduction			|jptemplate-introduction|
+    1.1. Features			|jptemplate-features|
+2. Prerequisies			|jptemplate-prerequisies|
+3. Installation			|jptemplate-installation|
+    3.1. Installing the plugin
+    3.2. Configuring VIM		|jptemplate-configuring-vim|
+	3.2.1. Configuration parameters
+4. Usage			|jptemplate-usage|
+    4.1. Writing templates
+	4.1.1. Directory structure
+	4.1.2. Special variables		|jptemplate-special-variables|
+    4.2. Using templates
+	4.2.1. Changing the keyboard shortcut
+    4.3. Demonstration videos
+5. Download			|jptemplate-download|
+6. Bugs and feature requests	|jptemplate-bugs-and-feature-requests|
+
+==============================================================================
+1. Introduction				*jptemplate-introduction*
+
+1.1. Features				*jptemplate-features*
+
+Version 1.0
+	- User variables (replaced with user input)
+	- Special ${cursor} variable for defining the cursor position
+	- Indentation
+	- Separate templates for different filetypes
+Version 1.1
+	- Configurable keyboard shortcut
+	- Default values for variables
+Version 1.2
+	- Support for special variables (with and without default value)
+	- Support for global defaults for user variables
+	- New special variable: ${date}
+Verson 1.3
+	- Bugfixes only
+Verson 1.4
+	- New special variables: ${shell:<put shell command here>} and
+	  ${interactive_shell:...}
+	- Remember last entered value for all non-special variables
+	- Allow $ to appear in variable names and values
+	- Bugfix: Automatically escape &, ~ and \ in variable values to avoid
+	  unexpected behaviour
+	- Bugfix: Just remove template trigger word if the resulting template
+	  is empty
+Verson 1.5 (NEW)
+	- New feature: Use the general/ template directory as a fallback
+	  lookup directory for all file types. This makes it possible to
+	  use the same templates for different file types (and override
+	  some of them if you like)
+	- Bugfix: Really fix the cursor placement this time
+
+==============================================================================
+2. Prerequisies				*jptemplate-prerequisies*
+
+All you need to have is VIM (no idea as of which version the plugin works)
+with filetype detection enabled. To enable this, put the following into your
+.vimrc:
+>
+	filetype plugin on
+<
+==============================================================================
+3. Installation				*jptemplate-installation*
+
+3.1. Installing the plugin
+
+If you don't have a preferred installation method, I recommend installing
+pathogen.vim:
+
+    https://github.com/tpope/vim-pathogen
+
+And then simply copy and paste:
+>
+    cd ~/.vim/bundle
+    git clone https://github.com/Jannis/jptemplate.git
+<
+Once help tags have been generated, you can view this manual with:
+>
+    :help jptemplate
+<
+3.2. Configuring VIM			*jptemplate-configuring-vim*
+
+All you need to do to configure VIM is to define the directory where all
+templates can be found. By default $HOME/.vim/jptemplate/ is used.
+
+If you want to define a directory on your own, put the following into your
+.vimrc:
+>
+	let g:jpTemplateDir = '/path/to/the/template/directory'
+<
+3.2.1. Configuration parameters
+
+							*g:jpTemplateDir*
+g:jpTemplateDir
+		'$HOME/.vim/jptemplate'
+		Path to the template directory.
+
+							*g:jpTemplateKey*
+g:jpTemplateKey
+		'<C-Tab>'
+		Keyboard shortcut for triggering templates
+
+							*g:jpTemplateDateFormat*
+g:jpTemplateDateFormat
+		'%Y-%m-%d'
+		Default strftime format used for ${date}
+
+							*g:jpTemplateDefaults*
+g:jpTemplateDefaults
+		{}
+		Dictionary with global default values for (non-special)
+		template variables.
+
+							*g:jpTemplateVerbose*
+g:jpTemplateVerbose
+		0
+		Can be used to increase the verbosity level (either 0 or 1).
+
+==============================================================================
+4. Usage				*jptemplate-usage*
+
+4.1. Writing templates
+
+Writing templates is easy. They are plain text files with embedded variables.
+When triggering a template, you are asked to enter values for most of these
+variables. After that the template is inserted into your document and all
+variables are replaced by the values you defined before.
+
+Variables are defined using the following syntax:
+>
+	${put variable name here}.
+<
+You can optionally provide a default value with
+${variable name:default value}. You can also define global defaults for any of
+these variables. See section Configuration parameters for more information.
+Please note that the value in ${variable name:default value} will always
+override the global default.
+
+This is an example for a simple for loop:
+>
+	for (${initializer expression:int i = 0}; ${loop test expression}; ${counting expression:++i})
+	    {
+	      ${cursor}
+        }
+<
+Please note that the ${cursor} variable is special. See the section Special
+variables for more information about ${cursor} and other special variables.
+
+You can also define one variable to appear several times in the same template.
+In this case you'll be asked only once to enter a value for the variable.
+Imagine a signature template:
+>
+	  Yours faithfully,
+	  ${name}
+	  
+	  Address:
+	    ${name}
+	    ${street}
+	    ${city}
+<
+Variables are case sensitive. Multiple occurences like ${x:i} ${x}' will yield
+i i. ${x} ${x:i} with a global default j for x will result in i i. Templates
+like ${x:i} ${x:j} ... end up as i i.
+
+4.1.1. Directory structure
+
+This section deals with the structure of the template directory. See section
+|jptemplate-configuring-vim| on how to define it.
+
+Let's assume for now that you are using the default template directory, which
+is $HOME/.vim/jptemplate/. This is how the directory structure has to look
+like:
+>
+	  $HOME/.vim/jptemplate/
+	    cpp/
+	      class
+	      for
+	      fun
+	      if
+	      ...
+	    c -> cpp/
+	    general/
+	    ruby/
+	      class
+	      def
+	      for
+	      if
+	      module
+	      ...
+	    sh/
+	      ...
+	    ...
+<
+Each subdirectory contains templates for one VIM file type. I guess the
+template filenames are pretty self-explanatory: Each filename represents the
+name you have to enter to trigger the template in VIM. Of course you can
+create symlinks everywhere if you like (as I did with c -> cpp/ in the
+example). Note that the general/ directory is special: it is used as a
+fallback lookup directory for all filetypes (even unknown ones). This way you
+can share templates across different file types.
+
+Hint: If you need to find out the filetype of a file you want to write a plugin
+for, just enter :echo &ft and VIM will tell you.
+
+4.1.2. Special variables		*jptemplate-special-variables*
+
+${cursor}
+		Parameters: none
+		This is where the cursor will be located after the
+		template has been inserted into your document.
+
+${date}
+		Parameters: strftime format string (optional)
+		Examples:	${date}
+				${date:%Y-%m-%d}
+		Insert the current date.
+
+${shell}
+		Parameters: Shell command
+		Examples:	${shell:ls -la}
+				${shell:firefox &>/dev/null}
+		Run a shell command and replace the variable with its output.
+
+${interactive_shell}
+		Parameters: Shell command (optional)
+		Examples:	See ${shell}
+		Same as ${shell} but will ask you to enter a shell command
+		prior to executing it.
+
+4.2. Using templates
+
+Using the templates is pretty straight-forwarded. Let's assume you're editing
+a C++ file and you have a working for template. This is all you need to do to
+trigger the template:
+>
+	for<C-Tab>
+<
+Pressing <C-Tab> will lookup the template for. If the template contains any
+non-reserved variables, VIM will start asking you to enter values for these
+variables. Once all questions have been answered, the template will inserted
+where the for was in your code. If the template contains ${cursor}, the cursor
+will be moved to that position.
+
+4.2.1. Changing the keyboard shortcut
+
+You can change the keyboard shortcut by setting the variable g:jpTemplateKey in
+your .vimrc. Example:
+>
+	let g:jpTemplateKey = '<Esc>'
+<
+4.3. Demonstration videos
+
+These are some demo videos I prepared of version 1.0 of the script. See the
+|jptemplate-features| section for a list of features supported by more recent
+versions.
+
+	- http://www.lunar-linux.org/~jannis/jptemplate/jptemplate.swf
+	- http://www.lunar-linux.org/~jannis/jptemplate/jptemplate-gobject.swf
+	- http://www.lunar-linux.org/~jannis/jptemplate/jptemplate-java.swf
+
+==============================================================================
+5. Download				*jptemplate-download*
+
+http://www.vim.org/scripts/script.php?script_id=2278
+
+==============================================================================
+6. Bugs and feature requests		*jptemplate-bugs-and-feature-requests*
+
+Please send bugs and feature requests to jannis@xfce.org. Thanks!
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:noet:fen:noet:
