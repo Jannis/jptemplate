@@ -1,4 +1,4 @@
-*jptemplate.txt*	For Vim version 7.3.	Last change: 2013 Nov 24
+*jptemplate.txt*	For Vim version 7.3.	Last change: 2014 Feb 25
 
 Version: 1.5
 Author : Jannis Pohlmann <jannis@xfce.org>
@@ -87,10 +87,19 @@ with filetype detection enabled. To enable this, put the following into your
 
 3.1. Installing the plugin
 
-To install the plugin, just copy jptemplate.vim to the VIM plugin directory.
+If you don't have a preferred installation method, I recommend installing
+pathogen.vim:
 
+    https://github.com/tpope/vim-pathogen
+
+And then simply copy and paste:
 >
-	cp jptemplate.vim $HOME/.vim/plugin/
+    cd ~/.vim/bundle
+    git clone https://github.com/Jannis/jptemplate.git
+<
+Once help tags have been generated, you can view this manual with:
+>
+    :help jptemplate
 <
 3.2. Configuring VIM			*jptemplate-configuring-vim*
 
